@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Autocarros Nazaré — horários</title>
+<style>
+:root{font-family:Arial,sans-serif;background:#f3f6f9;color:#17324d}
+*{box-sizing:border-box}body{margin:0}
+header{background:#087ea4;color:#fff;padding:24px 18px;text-align:center}
+header h1{margin:0 0 6px;font-size:28px}header p{margin:0;opacity:.92}
+main{max-width:800px;margin:auto;padding:18px}
+.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 3px 14px #0001}
+label{font-weight:bold;display:block;margin-bottom:8px}
+select,button{width:100%;padding:14px;border-radius:12px;border:1px solid #cbd5df;font-size:16px;background:#fff}
+button{background:#087ea4;color:#fff;border:0;font-weight:bold;margin-top:10px}
+.route{font-size:20px;font-weight:bold;margin:4px 0 8px}.info{font-size:14px;color:#52697c;line-height:1.45}
+.times{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:10px;margin-top:12px}
+.time{background:#e9f6fa;border-radius:12px;padding:13px;text-align:center;font-size:19px;font-weight:bold}
+.hidden{display:none}.small{font-size:13px;color:#607789}
+.badge{display:inline-block;background:#e9f6fa;padding:7px 10px;border-radius:999px;font-weight:bold;margin:4px 4px 8px 0}
+hr{border:0;border-top:1px solid #e4ebf0;margin:16px 0}
+.warning{background:#fff7df;border-radius:12px;padding:12px;font-size:14px;line-height:1.4}
+</style>
+</head>
+<body>
+<header><h1>🚌 Autocarros Nazaré</h1><p>Horários simples, com base no horário oficial de 1 de fevereiro de 2026</p></header>
+<main>
+<div class="card">
+<label for="line">1. Escolhe a linha</label>
+<select id="line"></select>
+</div>
+<div class="card">
+<label for="stop">2. Escolhe a paragem (ou o percurso na Linha 2)</label>
+<select id="stop"></select>
+<button onclick="showTimes()">Mostrar horários</button>
+</div>
+<div id="result" class="card hidden">
+<div class="small">Horários na paragem</div>
+<div id="stopName" class="route"></div>
+<div id="routeText" class="info"></div>
+<hr>
+<div id="times" class="times"></div>
+<p id="note" class="info"></p>
+</div>
+
+<div class="card">
+<strong>Linhas</strong><br>
+<span class="badge">1 · Sentido Sítio</span>
+<span class="badge">2 · Sentido Pederneira</span>
+<span class="badge">3 · Porto de Abrigo – Sítio – Fanhais</span>
+<span class="badge">4 · Circular Urbana</span>
+<p class="small">Fonte principal: Município da Nazaré / Rodoviária do Oeste. Horários em vigor desde 1 de fevereiro de 2026.</p>
+</div>
+<div class="warning">⚠️ Os horários podem ser alterados pelo operador. Para uma viagem real, confirma também a informação oficial mais recente.</div>
+</main>
+
+<script>
+const D = {
+"1 — Sentido Sítio": {
+ days:"2ª a 6ª feira, exceto feriados",
+ route:"Interface / Terminal → Sítio → regresso ao Interface",
+ stops:{
+  "Interface / Terminal":["08:55","14:55","17:55","09:30","15:30","18:30"],
+  "Mercado":["09:00","15:00","18:00","09:25","15:25"],
+  "Praça Dr. Manuel Arriaga":["09:02","15:02","18:02"],
+  "Bombeiros":["09:04","15:04","18:04","09:22","15:22"],
+  "Externato":["09:07","15:07","18:07","09:20","15:20"],
+  "Amadeu Gaudêncio":["09:08","15:08","18:08","09:19","15:19","18:15"],
+  "Zona Comercial":["09:10","15:10","18:17"],
+  "Sítio — Praça Vasco da Gama / Santuário":["09:15","15:15","18:12"],
+  "Camarção":["18:18"],
+  "Cooperativa":["18:21"],
+  "Pederneira — Miradouro / Cercina":["18:25"]
+ }
+},
+"2 — Sentido Pederneira": {
+ days:"2ª a 6ª feira, exceto feriados",
+ route:"A Linha 2 tem diferentes percursos ao longo do dia. Escolhe o percurso para veres apenas as paragens desse autocarro.",
+ routes:{
+  "Percurso A — direto para Pederneira": {
+   stops:{
+    "Mercado":["08:00","11:30","12:45","16:00","17:10","19:00","20:00","22:00"],
+    "Av. Município":["08:01","11:31","12:46","16:01","17:11","19:01","20:01","22:01"],
+    "Bombeiros":["08:03","11:33","12:48","16:03","17:13","19:03","20:03","22:03"],
+    "Pedralva":["08:05","11:35","12:50","16:05","17:15","19:05","20:05","22:05"],
+    "Pederneira — Miradouro / Cercina":["08:10","11:40","12:55","16:10","17:20","19:10","20:10","22:10"],
+    "Cooperativa":["08:15","11:45","13:00","16:15","17:25","19:15","20:15","22:15"],
+    "Nova Nazaré":["08:17","11:47","13:02","16:17","17:27","19:17","20:17","22:17"],
+    "Camarção":["08:18","11:48","13:03","16:18","17:28","19:18","20:18","22:18"],
+    "Zona Comercial":["08:20","11:50","13:05","16:20","17:30","19:20","20:20","22:20"],
+    "Amadeu Gaudêncio":["08:22","11:52","13:07","16:22","17:32","19:22","20:22","22:21"],
+    "Camarção (regresso)":["08:24","11:53","13:09","16:24","17:34","19:24","20:24","22:23"],
+    "Cooperativa (regresso)":["08:25","11:55","13:10","16:25","17:35","19:25","20:25","22:24"],
+    "Pederneira — Miradouro / Cercina (regresso)":["08:27","11:57","13:12","16:27","17:37","19:27","20:27"]
+   }
+  },
+  "Percurso B — passa pela Praça Dr. Manuel Arriaga": {
+   stops:{
+    "Mercado":["10:00","14:15"],
+    "Praça Dr. Manuel Arriaga":["10:02","14:17"],
+    "Bombeiros":["10:04","14:19","14:45"],
+    "Pedralva":["10:05","14:20"],
+    "Pederneira — Miradouro / Cercina":["10:10","14:25"],
+    "Cooperativa":["10:15","14:30"],
+    "Nova Nazaré":["10:17","14:32"],
+    "Camarção":["10:18","14:33","14:39"],
+    "Zona Comercial":["10:20","14:35"],
+    "Amadeu Gaudêncio":["10:22","14:37"],
+    "Camarção (regresso)":["10:24","14:39"],
+    "Cooperativa (regresso)":["10:25","14:40"],
+    "Pederneira — Miradouro / Cercina (regresso)":["10:27","14:42"],
+    "Bombeiros (regresso)":["10:30","14:45"],
+    "Mercado (regresso)":["10:35","14:50"]
+   }
+  },
+  "Percurso C — passa pelo Porto de Abrigo": {
+   stops:{
+    "Mercado":["12:10"],
+    "Av. Município":["12:11"],
+    "Bombeiros":["12:00","12:48"],
+    "Porto de Abrigo":["12:20"],
+    "Pedralva":["12:50"],
+    "Pederneira — Miradouro / Cercina":["12:55"],
+    "Cooperativa":["13:00"],
+    "Nova Nazaré":["13:02"],
+    "Camarção":["13:03"],
+    "Zona Comercial":["13:05"],
+    "Amadeu Gaudêncio":["13:07"],
+    "Camarção (regresso)":["13:09"],
+    "Cooperativa (regresso)":["13:10"],
+    "Pederneira — Miradouro / Cercina (regresso)":["13:12"],
+    "Bombeiros (regresso)":["13:15"],
+    "Mercado (regresso)":["13:20"]
+   }
+  }
+ }
+},
+"3 — Porto de Abrigo – Sítio – Fanhais": {
+ days:"2ª a 6ª feira, exceto feriados",
+ route:"Interface / Terminal → Porto de Pesca → Sítio → Fanhais → regresso",
+ stops:{
+  "Interface / Terminal":["07:25","08:40","10:25","12:05","13:55","16:55","17:55","08:05","08:55","11:00","12:20","14:40","17:40","18:35"],
+  "Mercado":["07:30","08:45","10:30","12:10","14:00","17:00","18:00"],
+  "Porto de Pesca":["07:35","08:50","12:15","14:05","17:05","18:05"],
+  "Bombeiros":["07:38","10:32","14:10","17:10","18:08","08:03","10:58","14:39","17:37","18:33"],
+  "Externato":["07:39","10:33","14:11","17:11","18:09","08:02","10:56","14:38","17:36","18:32"],
+  "Amadeu Gaudêncio":["07:40","10:34","14:12","17:12","18:10","08:00","10:55","14:34","17:35","18:30"],
+  "Sítio — Praça Vasco da Gama / Santuário":["10:36","14:14","17:14"],
+  "Zona Comercial":["07:41","10:38","14:15","17:15","18:11","07:58","10:53","14:33","17:33","18:28"],
+  "Fanhais — Centro / Saída":["07:50","10:45","14:25","17:25","18:20"],
+  "Camping":["07:55","10:50","14:30","17:30","18:25","07:50","10:55","14:33","17:33","18:28"]
+ }
+},
+"4 — Circular Urbana": {
+ days:"Sábados, domingos e feriados",
+ route:"Circuito circular urbano",
+ stops:{
+  "Interface / Terminal":["07:25","07:55","08:55","09:55","11:25","12:00","12:40","13:25","14:10","14:55","16:15","17:55","18:55","19:30","20:00","21:55","08:25","09:35","10:30","11:55","12:30","13:10","14:45","15:35","16:50","18:30","19:30","20:00","20:35","22:25"],
+  "Mercado":["07:30","08:00","09:00","10:00","11:30","12:05","12:45","13:30","14:15","15:00","16:20","18:00","19:00","19:35","20:05","22:00"],
+  "Praça Dr. Manuel Arriaga":["09:02","10:02","14:17","15:02","16:22","18:02","19:02","20:07","22:02"],
+  "Bombeiros":["07:31","08:02","09:03","10:03","11:32","12:06","12:47","13:31","14:18","15:03","16:23","18:03","19:03","19:36","20:08","22:04"],
+  "Pedralva":["09:05","10:05","11:35","12:50","14:20","16:25","18:05","19:05","20:10","22:06"],
+  "Externato":["07:35","09:05","12:10","13:35","15:05","19:40"],
+  "Amadeu Gaudêncio":["07:36","09:06","12:11","13:36","15:06","19:41"],
+  "Zona Comercial":["07:38","09:06","12:13","13:38","15:07","19:43","14:35","16:40","18:20","19:20","19:56","20:25"],
+  "Sítio — Praça Vasco da Gama / Santuário":["09:10","15:10"],
+  "Pederneira — Miradouro / Cercina":["08:10","10:10","11:40","12:55","14:25","16:30","18:10","19:10","20:15","22:11"],
+  "Cooperativa":["08:15","10:15","11:45","13:00","14:30","16:35","18:15","19:15","20:20","22:16"],
+  "Nova Nazaré":["08:17","09:16","10:17","11:47","13:02","14:32","15:16","16:37","18:17","19:17","20:22","22:18"],
+  "Camarção":["08:18","09:17","10:18","11:48","13:03","14:33","15:17","16:38","18:18","19:18","20:23","22:19"],
+  "Camping":["07:40","12:15","13:40","19:45","19:55"],
+  "Fanhais — Centro / Saída":["07:45","07:46","12:20","12:21","13:45","13:46","19:50","19:51"]
+ }
+}
+};
+
+const lineEl=document.getElementById("line"), stopEl=document.getElementById("stop");
+Object.keys(D).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=k;lineEl.appendChild(o);});
+function loadStops(){
+ stopEl.innerHTML="";
+ const d=D[lineEl.value];
+ if(d.routes){
+   Object.keys(d.routes).forEach(k=>{
+     const o=document.createElement("option");o.value=k;o.textContent=k;stopEl.appendChild(o);
+   });
+ }else{
+   Object.keys(d.stops).forEach(k=>{
+     const o=document.createElement("option");o.value=k;o.textContent=k;stopEl.appendChild(o);
+   });
+ }
+}
+lineEl.addEventListener("change",loadStops);loadStops();
+
+function showTimes(){
+ const d=D[lineEl.value];
+ if(d.routes){
+   const r=d.routes[stopEl.value];
+   document.getElementById("stopName").textContent=stopEl.value;
+   document.getElementById("routeText").textContent=d.route+" · "+d.days;
+   document.getElementById("times").innerHTML=
+     '<div style="grid-column:1/-1;font-weight:bold">Escolhe uma paragem</div>'+
+     Object.keys(r.stops).map(s=>`<div class="time" style="font-size:14px;line-height:1.25"><div>${s}</div><div style="margin-top:6px">${r.stops[s].join(" · ")}</div></div>`).join("");
+ }else{
+   const vals=d.stops[stopEl.value]||[];
+   document.getElementById("stopName").textContent=stopEl.value;
+   document.getElementById("routeText").textContent=d.route+" · "+d.days;
+   document.getElementById("times").innerHTML=vals.map(t=>`<div class="time">${t}</div>`).join("");
+ }
+ document.getElementById("note").textContent="Fonte: horário oficial publicado pelo Município da Nazaré/Rodoviária do Oeste, com entrada em vigor em 1 de fevereiro de 2026.";
+ document.getElementById("result").classList.remove("hidden");
+}
+</script>
+</body>
+</html>
